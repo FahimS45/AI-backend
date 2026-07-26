@@ -22,7 +22,7 @@ SEED_TASKS: list[Task] = [
 
 @app.get("/")
 async def root():
-    return {"name": "Task API", "version": "1.0", "endpoints": ["/tasks"]}
+    return {"name": "Task API", "version": "1.0", "endpoints": ["/tasks", "/stats"]}
 
 @app.get("/health")
 async def health_check():
@@ -41,6 +41,24 @@ async def get_task_with_id(task_id: int = Path(..., description="ID of the task 
 
     raise HTTPException(status_code=404, detail=f"Task {task_id} not found!")
 
+@app.get("/stats", response_model=list[Task])
+async def get_stats():
 
+    completed=[]
+    for task in SEED_TASKS:
+        if task.done == True:
+            completed.append(task)
+    
+    return completed
+
+@app.post("/tasks/{title}")
+async def create_task(title: str = Path(..., description="Task title.", examples=["Make pasta"])):
+
+    task_id = len(SEED_TASKS) + 1
+    task = Task(id=task_id, title=title, done=False)
+    SEED_TASKS.append(task)
+
+    return JSONResponse(status_code=201, content={"message": "Created!"})
+    
     
 
