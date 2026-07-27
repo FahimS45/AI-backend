@@ -38,12 +38,12 @@ uvicorn main:app --reload
 ## API Endpoints Summary
 
 | Method | Endpoint | Description | Request Body | Response Code |
-| --- | --- | --- | --- | --- |
+| :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/` | API Metadata & available endpoint list | None | `200 OK` |
 | **GET** | `/health` | Server health check | None | `200 OK` |
-| **GET** | `/tasks` | List all tasks | None | `200 OK` |
+| **GET** | `/tasks` | List all tasks (supports optional `done=true` or `done=false` filter) | None | `200 OK` |
 | **GET** | `/tasks/{task_id}` | Get details of a specific task by ID | None | `200 OK` / `404 Not Found` |
-| **GET** | `/stats` | List all completed tasks (`done == true`) | None | `200 OK` |
+| **GET** | `/stats` | Get task counts summary (`total`, `done`, `open`) | None | `200 OK` |
 | **POST** | `/tasks` | Create a new task | `{"title": "string"}` | `201 Created` |
 | **PUT** | `/tasks/{task_id}` | Update the title of an existing task | `{"new_title": "string"}` | `200 OK` / `404 Not Found` |
 | **DELETE** | `/tasks/{task_id}` | Delete a task by ID | None | `204 No Content` / `404 Not Found` |
