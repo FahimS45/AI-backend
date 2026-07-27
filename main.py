@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Path, Query
+from fastapi import FastAPI, HTTPException, Path, Query, Body
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Annotated, Literal, Optional
@@ -51,8 +51,8 @@ async def get_stats():
     
     return completed
 
-@app.post("/tasks/{title}")
-async def create_task(title: str = Path(..., description="Task title.", examples=["Make pasta"])):
+@app.post("/tasks")
+async def create_task(title: str = Body(..., embed=True, description="Task title.", examples=["Make pasta"])):
 
     task_id = len(SEED_TASKS) + 1
     task = Task(id=task_id, title=title, done=False)
@@ -60,5 +60,30 @@ async def create_task(title: str = Path(..., description="Task title.", examples
 
     return JSONResponse(status_code=201, content={"message": "Created!"})
     
+@app.put("/tasks/{task_id}", response_model=Task)
+async def update_task(task_id: int = Path(..., description="The ID of the task to update."), 
+                      new_title: str = Body(..., embed=True, description="New title of the task.")):
+
+    for task in SEED_TASKS:
+        if task.id == task_id:
+            task.title = new_title
+            return task
+
+    raise HTTPException(status_code=404, detail="Unknown ID")
+
+@app.delete("/tasks/{task_id}")
+async def delete_task(task_id: int = Path(..., description="ID of the task.")):
+
+    for index, task in enumerate(SEED_TASKS):
+        if task.id == task_id:
+            SEED_TASKS.pop(index)
+            return JSONResponse(status_code=204, content={"message": "No Content"})
+
+    raise HTTPException(status_code=404, detail="Unknown ID.")
+
+
+
+
+
     
 
