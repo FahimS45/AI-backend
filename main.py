@@ -1,6 +1,7 @@
-from fastapi import FastAPI, HTTPException, Path, Body
+from fastapi import FastAPI, HTTPException, Path, Query, Body
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from typing import Optional
 
 
 app = FastAPI()
@@ -28,8 +29,24 @@ async def health_check():
     return {"status": "ok" }
 
 @app.get("/tasks", response_model=list[Task])
-async def get_tasks():
-    return SEED_TASKS
+async def get_tasks(done: Optional[bool] = Query(None, description="Search for finished tasks.")):
+
+    if done == True:
+        completed=[]
+        for task in SEED_TASKS:
+            if task.done == True:
+                completed.append(task)
+        return completed
+
+    elif done == False:
+        open=[]
+        for task in SEED_TASKS:
+            if task.done == False:
+                open.append(task)
+        return open
+    
+    else:
+        return SEED_TASKS
 
 @app.get("/tasks/{task_id}", response_model=Task)
 async def get_task_with_id(task_id: int = Path(..., description="ID of the task in the queue.", examples=[1])):
@@ -40,15 +57,18 @@ async def get_task_with_id(task_id: int = Path(..., description="ID of the task 
 
     raise HTTPException(status_code=404, detail=f"Task {task_id} not found!")
 
-@app.get("/stats", response_model=list[Task])
+@app.get("/stats")
 async def get_stats():
 
     completed=[]
+    open=[]
     for task in SEED_TASKS:
         if task.done == True:
             completed.append(task)
+        else:
+            open.append(task)
     
-    return completed
+    return {"total": len(SEED_TASKS), "done": len(completed), "open": len(open)}
 
 @app.post("/tasks")
 async def create_task(title: str = Body(..., embed=True, description="Task title.", examples=["Make pasta"])):
